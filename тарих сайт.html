@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Әлихан Бөкейхановтың өмір жолы | Интерактивті карта</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1b4332;
+            --accent: #d4af37;
+            --dark: #212529;
+            --light: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f1ea;
+            overflow: hidden;
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .sidebar {
+            width: 420px;
+            background: #ffffff;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+            border-left: 4px solid var(--accent);
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: #fefae0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .profile-card {
+            padding: 15px;
+            text-align: center;
+            background: #faf8f5;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .profile-card h3 {
+            margin-top: 10px;
+            color: var(--dark);
+            font-size: 18px;
+        }
+
+        .profile-card span {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .points-list {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .point-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .point-item:hover, .point-item.active {
+            background: #f0f7f4;
+            border-left-color: var(--accent);
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .point-item h4 {
+            font-size: 15px;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .point-item .year {
+            font-size: 12px;
+            background: var(--accent);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .info-box {
+            padding: 20px;
+            background: #fdfbf7;
+            border-top: 2px dashed var(--accent);
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .info-box h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .info-box p {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column-reverse;
+            }
+            .sidebar {
+                width: 100%;
+                height: 50vh;
+            }
+            #map {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div class="sidebar">
+        <div class="header">
+            <h1>Әлихан Бөкейханов</h1>
+            <p>1866 – 1937 | Өмір жолы мен тарихи іздері</p>
+        </div>
+
+        <div class="profile-card">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d2/Alikhan_Bukeikhanov.jpg" alt="Әлихан Бөкейханов">
+            <h3>Әлихан Нұрмұхамедұлы</h3>
+            <span>Алаш Орда үкіметінің төрағасы, қайраткер, ғалым</span>
+        </div>
+
+        <div class="points-list">
+            <div class="point-item" onclick="focusLocation(0)">
+                <h4>1. Қарқаралы <span class="year">1866 – 1886</span></h4>
+            </div>
+            <div class="point-item" onclick="focusLocation(1)">
+                <h4>2. Омбы (Омск) <span class="year">1886 – 1890</span></h4>
+            </div>
+            <div class="point-item" onclick="focusLocation(2)">
+                <h4>3. Санкт-Петербург <span class="year">1890 – 1894</span></h4>
+            </div>
+            <div class="point-item" onclick="focusLocation(3)">
+                <h4>4. Самара <span class="year">1908 – 1917</span></h4>
+            </div>
+            <div class="point-item" onclick="focusLocation(4)">
+                <h4>5. Семей <span class="year">1917 – 1920</span></h4>
+            </div>
+            <div class="point-item" onclick="focusLocation(5)">
+                <h4>6. Мәскеу (Москва) <span class="year">1922 – 1937</span></h4>
+            </div>
+        </div>
+
+        <div class="info-box" id="info-content">
+            <h3>Картадан орынды таңдаңыз</h3>
+            <p>Точканы басқан кезде карта сол аймаққа жақындап, Әлихан Бөкейхановтың өміріне қатысты маңызды тарихи деректер шығады.</p>
+        </div>
+    </div>
+
+    <!-- Leaflet JS Library -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const locations = [
+            {
+                title: "1. Қарқаралы — Туған жері",
+                year: "1866 – 1886 жж.",
+                coords: [49.4079, 75.4742],
+                zoom: 10,
+                description: "<b>Туған жері мен алғашқы білімі:</b><br>1866 жылы 5 наурызда Семей облысы, Қарқаралы уезінде туған. Қарқаралыдағы бастауыш мектепте және өнеркәсіптік училищеде оқып, білімге алғашқы қадам жасаған."
+            },
+            {
+                title: "2. Омбы (Омск) — Техникалық білім",
+                year: "1886 – 1890 жж.",
+                coords: [54.9885, 73.3242],
+                zoom: 11,
+                description: "<b>Омбы училищесі:</b><br>Омбы өскелең техничкалық училищесін бітіріп, математика мен техника пәндерін терең меңгерді. Кейін осы қалада 'Дала уәлаяты' газетіне мақалалар жазып, ағартушылық қызметін бастады."
+            },
+            {
+                title: "3. Санкт-Петербург — Жоғары білім",
+                year: "1890 – 1894 жж.",
+                coords: [59.9343, 30.3351],
+                zoom: 10,
+                description: "<b>Орман институты мен Экономика факультеті:</b><br>Императорлық Орман институтының экономика факультетінде оқыды. Студенттік жылдары саяси қозғалыстарға араласып, білімді экономист-ғалым болып шықты."
+            },
+            {
+                title: "4. Самара — Айдау және қоғамдық қызмет",
+                year: "1908 – 1917 жж.",
+                coords: [53.2415, 50.2212],
+                zoom: 11,
+                description: "<b>Самарадағы жылдар:</b><br>Патша үкіметінің қуғындауымен Самараға жер аударылды. Дон жер банкінде қызмет істеп, 'Қазақ' газетіне белсенді түрде мақалалар жіберіп, Алаш идеясын насихаттады."
+            },
+            {
+                title: "5. Семей — Алаш Орда үкіметі",
+                year: "1917 – 1920 жж.",
+                coords: [50.4111, 80.2275],
+                zoom: 11,
+                description: "<b>Алаш Орда Астанасы:</b><br>1917 жылы Жалпықазақ сиезінде Алаш автономиясы жарияланып, Әлихан Бөкейханов Ұлт Кеңесінің (Алаш Орда үкіметі) төрағасы болып сайланды."
+            },
+            {
+                title: "6. Мәскеу (Москва) — Соңғы жылдары",
+                year: "1922 – 1937 жж.",
+                coords: [55.7558, 37.6173],
+                zoom: 10,
+                description: "<b>Ғылыми мұра және репрессия:</b><br>Мәскеуде КСРО Ғылым Академиясында, Баспалар орталығында аудармашы, профессор болды. 1937 жылы репрессияға ұшырап, атылды. 1989 жылы толық ақталды."
+            }
+        ];
+
+        // Картаны инициализациялау
+        const map = L.map('map').setView([52.0, 65.0], 5);
+
+        // Esri World Street Map (API Key талап етпейді)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+        }).addTo(map);
+
+        const markers = [];
+
+        locations.forEach((loc, index) => {
+            const marker = L.marker(loc.coords).addTo(map);
+            
+            marker.on('click', () => {
+                selectLocation(index);
+            });
+
+            markers.push(marker);
+        });
+
+        function selectLocation(index) {
+            const loc = locations[index];
+            
+            map.flyTo(loc.coords, loc.zoom, {
+                duration: 1.5
+            });
+
+            document.getElementById('info-content').innerHTML = `
+                <h3>${loc.title}</h3>
+                <p><b>Кезеңі:</b> ${loc.year}</p><br>
+                <p>${loc.description}</p>
+            `;
+
+            const items = document.querySelectorAll('.point-item');
+            items.forEach((item, i) => {
+                if(i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        function focusLocation(index) {
+            selectLocation(index);
+        }
+    </script>
+</body>
+</html>
